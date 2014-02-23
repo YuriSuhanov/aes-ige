@@ -42,7 +42,7 @@ public final class AESIGECipher {
     private static final String AES_CIPHER_TRANSFORMATION =
             String.format("%s/%s/%s", AES_ALGORITHM, ECB_MODE, NO_PADDING);
 
-    private final Cipher mEmbeddedCipher;
+    private final Cipher mInternalCipher;
     private final SecretKey mSecretKey;
 
     private final int mBlockSize;
@@ -54,8 +54,8 @@ public final class AESIGECipher {
             checkSecretKey(secretKeyRaw);
             mSecretKey = new SecretKeySpec(secretKeyRaw, AES_ALGORITHM);
 
-            mEmbeddedCipher = Cipher.getInstance(AES_CIPHER_TRANSFORMATION);
-            mBlockSize = mEmbeddedCipher.getBlockSize();
+            mInternalCipher = Cipher.getInstance(AES_CIPHER_TRANSFORMATION);
+            mBlockSize = mInternalCipher.getBlockSize();
 
             checkIV(ivRaw);
             mIVRaw = ivRaw.clone();
@@ -113,12 +113,12 @@ public final class AESIGECipher {
     }
 
     /*
-     * Methods to interact with embedded cipher
+     * Methods to interact with internal cipher
      */
 
     private void initCipher(boolean encrypt) {
         try {
-            mEmbeddedCipher.init(encrypt ? Cipher.ENCRYPT_MODE : Cipher.DECRYPT_MODE, mSecretKey);
+            mInternalCipher.init(encrypt ? Cipher.ENCRYPT_MODE : Cipher.DECRYPT_MODE, mSecretKey);
         } catch (Exception exception) {
             exception.printStackTrace();
             throw new RuntimeException(exception.getMessage());
@@ -127,7 +127,7 @@ public final class AESIGECipher {
 
     private byte[] applyCipher(byte[] block) {
         try {
-            return mEmbeddedCipher.doFinal(block);
+            return mInternalCipher.doFinal(block);
         } catch (Exception exception) {
             exception.printStackTrace();
             throw new RuntimeException(exception.getMessage());
